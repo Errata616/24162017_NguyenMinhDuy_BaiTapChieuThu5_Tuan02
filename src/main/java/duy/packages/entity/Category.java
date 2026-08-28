@@ -24,8 +24,9 @@ public class Category implements Serializable {
     @Column(name="status")
     private int status;
 
-    @OneToMany(mappedBy="categories")
-    private List<Video> videos;
+    // Quan hệ 1-n với Product: 1 Category có nhiều Product
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Product> products;
 
     public Category() {
     }
@@ -62,23 +63,11 @@ public class Category implements Serializable {
         this.status = status;
     }
 
-    public List<Video> getVideos() {
-        return this.videos;
+    public List<Product> getProducts() {
+        return this.products;
     }
 
-    public void setVideos(List<Video> videos) {
-        this.videos = videos;
-    }
-
-    public Video addVideo(Video video) {
-        getVideos().add(video);
-        video.setCategory(this);
-        return video;
-    }
-
-    public Video removeVideo(Video video) {
-        getVideos().remove(video);
-        video.setCategory(null);
-        return video;
+    public void setProducts(List<Product> products) {
+        this.products = products;
     }
 }
