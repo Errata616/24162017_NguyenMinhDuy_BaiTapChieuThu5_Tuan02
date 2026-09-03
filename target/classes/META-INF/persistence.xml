@@ -10,15 +10,15 @@
 
         <properties>
             <property name="jakarta.persistence.jdbc.url"
-                      value="jdbc:sqlserver://localhost:1433;encrypt=true;trustServerCertificate=true;databaseName=webst2" />
+                      value="jdbc:sqlserver://localhost:1433;encrypt=true;trustServerCertificate=true;databaseName=WebDevelopment" />
             <property name="jakarta.persistence.jdbc.driver"
                       value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
-            <property name="jakarta.persistence.jdbc.user" value="sa" />
-            <property name="jakarta.persistence.jdbc.password" value="1234567@a$" />
+            <property name="jakarta.persistence.jdbc.user" value="DuyMinh" />
+            <property name="jakarta.persistence.jdbc.password" value="duy12345678" />
             
             <property name="hibernate.show_sql" value="true" />
             <property name="hibernate.format_sql" value="true" />
-            <property name="hibernate.hbm2ddl.auto" value="update" />
+            <property name="hibernate.hbm2ddl.auto" value="create" />
             <property name="hibernate.dialect" value="org.hibernate.dialect.SQLServerDialect" />
         </properties>
     </persistence-unit>

@@ -44,4 +44,14 @@ public class UserDao {
         } catch (Exception e) { return null; }
         finally { enma.close(); }
     }
+
+    // Lay 1 User theo id - dung de reload du lieu moi nhat cho trang Profile
+    public User findById(int id) {
+        EntityManager enma = JPAConfig.getEntityManager();
+        try {
+            return enma.find(User.class, id);
+        } finally {
+            enma.close();
+        }
+    }
 }

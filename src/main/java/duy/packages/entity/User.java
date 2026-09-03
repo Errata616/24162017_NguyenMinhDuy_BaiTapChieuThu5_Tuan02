@@ -22,8 +22,16 @@ public class User implements Serializable {
     @Column(nullable = false)
     private String password;
 
-    private boolean status; // false: Chưa kích hoạt, true: Đã kích hoạt
-    private String code;    // Mã OTP
+    private boolean status; // false: Chua kich hoat, true: Da kich hoat
+    private String code;    // Ma OTP
+
+    // ==== Cac truong moi cho chuc nang Profile ====
+    @Column(name = "full_name")
+    private String fullName;
+
+    private String phone;
+
+    private String avatar; // ten file anh dai dien, luu trong Constants.DIR (giong Product.images)
 
     public User() {}
 
@@ -39,4 +47,11 @@ public class User implements Serializable {
     public void setStatus(boolean status) { this.status = status; }
     public String getCode() { return code; }
     public void setCode(String code) { this.code = code; }
+
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+    public String getAvatar() { return avatar; }
+    public void setAvatar(String avatar) { this.avatar = avatar; }
 }
