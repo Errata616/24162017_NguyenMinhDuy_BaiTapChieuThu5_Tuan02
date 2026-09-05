@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+         https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
+
+    <display-name>Web Cua Duy</display-name>
+
+    <!-- =======================================================
+         CAU HINH SITEMESH 3 DECORATOR
+         SiteMesh se doc file WEB-INF/sitemesh3.xml de biet:
+           - Trang nao duoc decorate (boc layout)
+           - Trang nao khong duoc decorate (anh, css, js...)
+         ======================================================= -->
+    <filter>
+        <filter-name>sitemesh</filter-name>
+        <filter-class>org.sitemesh.config.ConfigurableSiteMeshFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>sitemesh</filter-name>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+    </filter-mapping>
+
+    <welcome-file-list>
+        <welcome-file>home</welcome-file>
+    </welcome-file-list>
+
+    <error-page>
+        <exception-type>java.lang.Exception</exception-type>
+        <location>/views/error.jsp</location>
+    </error-page>
+
+</web-app>

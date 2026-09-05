@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -17,6 +19,7 @@ import jakarta.servlet.http.Part;
 import duy.packages.constant.Constants;
 import duy.packages.dao.impl.UserDao;
 import duy.packages.entity.User;
+import duy.packages.utils.ValidationUtils;
 
 // Quan ly trang Profile: xem + cap nhat fullname, phone, avatar (upload multipart)
 // Cung co che upload voi ProductController (Part -> Constants.DIR), phuc vu lai boi ImageController (/image?fname=)
@@ -58,6 +61,23 @@ public class ProfileController extends HttpServlet {
 
             String fullName = req.getParameter("fullname");
             String phone = req.getParameter("phone");
+
+            // ===== Validation phia server =====
+            Map<String, String> errors = new HashMap<>();
+            if (!ValidationUtils.maxLength(fullName, 100)) {
+                errors.put("fullname", "Ho va ten toi da 100 ky tu.");
+            }
+            if (!ValidationUtils.isValidPhone(phone)) {
+                errors.put("phone", "So dien thoai khong hop le (VD: 0912345678).");
+            }
+            if (!errors.isEmpty()) {
+                req.setAttribute("fieldErrors", errors);
+                req.setAttribute("error", "Vui long kiem tra lai thong tin da nhap.");
+                req.setAttribute("user", user);
+                req.getRequestDispatcher("/views/profile.jsp").forward(req, resp);
+                return;
+            }
+
             user.setFullName(fullName);
             user.setPhone(phone);
 

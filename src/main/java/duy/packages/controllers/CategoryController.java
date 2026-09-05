@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -20,10 +22,15 @@ import duy.packages.constant.Constants;
 import duy.packages.entity.Category;
 import duy.packages.services.ICategoryService;
 import duy.packages.services.impl.CategoryServicesImpl;
+import duy.packages.utils.ValidationUtils;
 
+// Chi quan ly Category. Cac duong dan /admin/product/* thuoc ve ProductController -
+// khong duoc khai bao lai o day, vi 2 servlet trung urlPattern se lam Tomcat tu choi deploy.
 @MultipartConfig()
-@WebServlet(urlPatterns = { "/admin/categories", "/admin/category/add", "/admin/category/insert",
-        "/admin/category/edit", "/admin/category/update", "/admin/category/delete" })
+@WebServlet(urlPatterns = {
+        "/admin/categories", "/admin/category/add", "/admin/category/insert",
+        "/admin/category/edit", "/admin/category/update", "/admin/category/delete"
+})
 public class CategoryController extends HttpServlet {
     private static final long serialVersionUID = 1L;
     public ICategoryService cateService = new CategoryServicesImpl();
@@ -31,17 +38,21 @@ public class CategoryController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String url = req.getRequestURI();
+
         if (url.contains("/admin/categories")) {
             List<Category> list = cateService.findAll();
             req.setAttribute("listcate", list);
             req.getRequestDispatcher("/views/admin/category-list.jsp").forward(req, resp);
+
         } else if (url.contains("/admin/category/add")) {
             req.getRequestDispatcher("/views/admin/category-add.jsp").forward(req, resp);
+
         } else if (url.contains("/admin/category/edit")) {
             int id = Integer.parseInt(req.getParameter("id"));
             Category category = cateService.findById(id);
             req.setAttribute("cate", category);
             req.getRequestDispatcher("/views/admin/category-edit.jsp").forward(req, resp);
+
         } else if (url.contains("/admin/category/delete")) {
             int id = Integer.parseInt(req.getParameter("id"));
             try {
@@ -56,13 +67,23 @@ public class CategoryController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String url = req.getRequestURI();
+
         if (url.contains("/admin/category/insert")) {
             String categoryname = req.getParameter("categoryname");
-            int status = Integer.parseInt(req.getParameter("status"));
+            String statusParam = req.getParameter("status");
             String images = req.getParameter("images");
 
+            Map<String, String> errors = validateCategory(categoryname, statusParam);
+            if (!errors.isEmpty()) {
+                req.setAttribute("fieldErrors", errors);
+                req.setAttribute("error", "Vui long kiem tra lai thong tin danh muc.");
+                req.getRequestDispatcher("/views/admin/category-add.jsp").forward(req, resp);
+                return;
+            }
+
+            int status = Integer.parseInt(statusParam);
             Category category = new Category();
-            category.setCategoryname(categoryname);
+            category.setCategoryname(categoryname.trim());
             category.setStatus(status);
             String fname = "";
             String uploadPath = Constants.DIR;
@@ -71,7 +92,7 @@ public class CategoryController extends HttpServlet {
                 uploadDir.mkdir();
             try {
                 Part part = req.getPart("images1");
-                if (part.getSize() > 0) {
+                if (part != null && part.getSize() > 0) {
                     String filename = Paths.get(part.getSubmittedFileName()).getFileName().toString();
                     int index = filename.lastIndexOf(".");
                     String ext = filename.substring(index + 1);
@@ -89,17 +110,26 @@ public class CategoryController extends HttpServlet {
 
             cateService.insert(category);
             resp.sendRedirect(req.getContextPath() + "/admin/categories");
-        }
 
-        if (url.contains("/admin/category/update")) {
+        } else if (url.contains("/admin/category/update")) {
             int categoryid = Integer.parseInt(req.getParameter("categoryid"));
             String categoryname = req.getParameter("categoryname");
-            int status = Integer.parseInt(req.getParameter("status"));
+            String statusParam = req.getParameter("status");
             String images = req.getParameter("images");
 
+            Map<String, String> errors = validateCategory(categoryname, statusParam);
+            if (!errors.isEmpty()) {
+                req.setAttribute("fieldErrors", errors);
+                req.setAttribute("error", "Vui long kiem tra lai thong tin danh muc.");
+                req.setAttribute("cate", cateService.findById(categoryid));
+                req.getRequestDispatcher("/views/admin/category-edit.jsp").forward(req, resp);
+                return;
+            }
+
+            int status = Integer.parseInt(statusParam);
             Category category = cateService.findById(categoryid);
             String fileold = category.getImages();
-            category.setCategoryname(categoryname);
+            category.setCategoryname(categoryname.trim());
             category.setStatus(status);
             String fname = "";
             String uploadPath = Constants.DIR;
@@ -108,7 +138,7 @@ public class CategoryController extends HttpServlet {
                 uploadDir.mkdir();
             try {
                 Part part = req.getPart("images1");
-                if (part.getSize() > 0) {
+                if (part != null && part.getSize() > 0) {
                     if (category.getImages() != null && !category.getImages().startsWith("https")) {
                         deleteFile(uploadPath + "\\" + fileold);
                     }
@@ -130,6 +160,23 @@ public class CategoryController extends HttpServlet {
             cateService.update(category);
             resp.sendRedirect(req.getContextPath() + "/admin/categories");
         }
+    }
+
+    private Map<String, String> validateCategory(String categoryname, String statusParam) {
+        Map<String, String> errors = new HashMap<>();
+
+        if (ValidationUtils.isBlank(categoryname)) {
+            errors.put("categoryname", "Ten danh muc khong duoc de trong.");
+        } else if (!ValidationUtils.maxLength(categoryname.trim(), 255)) {
+            errors.put("categoryname", "Ten danh muc toi da 255 ky tu.");
+        }
+
+        if (ValidationUtils.isBlank(statusParam)
+                || !("0".equals(statusParam.trim()) || "1".equals(statusParam.trim()))) {
+            errors.put("status", "Vui long chon trang thai danh muc.");
+        }
+
+        return errors;
     }
 
     public static void deleteFile(String filePath) throws IOException {

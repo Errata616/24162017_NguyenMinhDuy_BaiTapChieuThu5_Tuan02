@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -21,6 +23,7 @@ import duy.packages.dao.impl.CategoryDao;
 import duy.packages.dao.impl.ProductDao;
 import duy.packages.entity.Category;
 import duy.packages.entity.Product;
+import duy.packages.utils.ValidationUtils;
 
 // 4.1 CRUD cho bảng Products (khu vực quản trị)
 @MultipartConfig()
@@ -67,13 +70,25 @@ public class ProductController extends HttpServlet {
 
         if (url.contains("/admin/product/insert")) {
             String productName = req.getParameter("productname");
-            double price = Double.parseDouble(req.getParameter("price"));
+            String priceParam = req.getParameter("price");
             String description = req.getParameter("description");
-            int categoryId = Integer.parseInt(req.getParameter("categoryid"));
+            String categoryIdParam = req.getParameter("categoryid");
             String images = req.getParameter("images");
 
+            Map<String, String> errors = validateProduct(productName, priceParam, categoryIdParam);
+            if (!errors.isEmpty()) {
+                req.setAttribute("fieldErrors", errors);
+                req.setAttribute("error", "Vui long kiem tra lai thong tin san pham.");
+                req.setAttribute("listcate", categoryDao.findAll());
+                req.getRequestDispatcher("/views/admin/product-add.jsp").forward(req, resp);
+                return;
+            }
+
+            double price = Double.parseDouble(priceParam.trim());
+            int categoryId = Integer.parseInt(categoryIdParam.trim());
+
             Product product = new Product();
-            product.setProductName(productName);
+            product.setProductName(productName.trim());
             product.setPrice(price);
             product.setDescription(description);
             product.setCategory(categoryDao.findById(categoryId));
@@ -105,16 +120,30 @@ public class ProductController extends HttpServlet {
         }
 
         if (url.contains("/admin/product/update")) {
-            int productId = Integer.parseInt(req.getParameter("productid"));
+            String productIdParam = req.getParameter("productid");
             String productName = req.getParameter("productname");
-            double price = Double.parseDouble(req.getParameter("price"));
+            String priceParam = req.getParameter("price");
             String description = req.getParameter("description");
-            int categoryId = Integer.parseInt(req.getParameter("categoryid"));
+            String categoryIdParam = req.getParameter("categoryid");
             String images = req.getParameter("images");
+
+            int productId = Integer.parseInt(productIdParam);
+            Map<String, String> errors = validateProduct(productName, priceParam, categoryIdParam);
+            if (!errors.isEmpty()) {
+                req.setAttribute("fieldErrors", errors);
+                req.setAttribute("error", "Vui long kiem tra lai thong tin san pham.");
+                req.setAttribute("product", productDao.findById(productId));
+                req.setAttribute("listcate", categoryDao.findAll());
+                req.getRequestDispatcher("/views/admin/product-edit.jsp").forward(req, resp);
+                return;
+            }
+
+            double price = Double.parseDouble(priceParam.trim());
+            int categoryId = Integer.parseInt(categoryIdParam.trim());
 
             Product product = productDao.findById(productId);
             String fileold = product.getImages();
-            product.setProductName(productName);
+            product.setProductName(productName.trim());
             product.setPrice(price);
             product.setDescription(description);
             product.setCategory(categoryDao.findById(categoryId));
@@ -147,6 +176,27 @@ public class ProductController extends HttpServlet {
             productDao.update(product);
             resp.sendRedirect(req.getContextPath() + "/admin/products");
         }
+    }
+
+    /** Validate du lieu form them/sua San pham. Tra ve Map rong neu hop le. */
+    private Map<String, String> validateProduct(String productName, String priceParam, String categoryIdParam) {
+        Map<String, String> errors = new HashMap<>();
+
+        if (ValidationUtils.isBlank(productName)) {
+            errors.put("productname", "Ten san pham khong duoc de trong.");
+        } else if (!ValidationUtils.maxLength(productName.trim(), 255)) {
+            errors.put("productname", "Ten san pham toi da 255 ky tu.");
+        }
+
+        if (!ValidationUtils.isPositiveNumber(priceParam)) {
+            errors.put("price", "Gia san pham phai la so va lon hon 0.");
+        }
+
+        if (!ValidationUtils.isPositiveInt(categoryIdParam)) {
+            errors.put("categoryid", "Vui long chon danh muc san pham.");
+        }
+
+        return errors;
     }
 
     public static void deleteFile(String filePath) throws IOException {

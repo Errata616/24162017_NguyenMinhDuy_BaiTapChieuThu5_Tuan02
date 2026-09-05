@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Cau hinh SiteMesh 3.
+    - "decorator" mac dinh: 01 template Bootstrap dung chung cho toan bo site
+      (header/navbar + main content + footer).
+    - Cac duong dan tinh (anh, css, js, font...) va servlet xuat anh nhi phan
+      duoc "excluded" de KHONG bi SiteMesh boc lai (tranh loi/hong file).
+-->
+<sitemesh>
+
+    <!-- Khong decorate cac tai nguyen tinh va anh do ImageController tra ve -->
+    <!-- Luu y: ImageController map dung "/image" (khong co /* phia sau), URL thuc te la
+         "/image?fname=..." nen phai loai tru ca 2 dang duong dan de chac chan -->
+    <mapping path="/image" excluded="true"/>
+    <mapping path="/image/*" excluded="true"/>
+    <mapping path="/assets/*" excluded="true"/>
+    <mapping path="*.css" excluded="true"/>
+    <mapping path="*.js" excluded="true"/>
+    <mapping path="*.png" excluded="true"/>
+    <mapping path="*.jpg" excluded="true"/>
+    <mapping path="*.jpeg" excluded="true"/>
+    <mapping path="*.gif" excluded="true"/>
+    <mapping path="*.ico" excluded="true"/>
+    <mapping path="*.woff" excluded="true"/>
+    <mapping path="*.svg" excluded="true"/>
+
+    <!-- Tat ca cac trang con lai dung chung 01 Decorator Template Bootstrap -->
+    <mapping path="/*" decorator="/WEB-INF/decorators/main.jsp"/>
+
+</sitemesh>
