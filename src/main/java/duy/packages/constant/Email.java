@@ -12,8 +12,8 @@ import jakarta.mail.internet.MimeMessage;
 
 public class Email {
 
-    private static final String FROM_EMAIL = "duyminn10413d@gmail.com";
-    private static final String PASSWORD = "yymp hxxo qfgg kcsp";
+    private static final String FROM_EMAIL = "taiKhoanEmail@gmail.com";
+    private static final String PASSWORD = "xxxx xxxx xxxx xxxx";
 
     public static boolean sendEmail(String toEmail, String subject, String body) {
 
